@@ -2,12 +2,15 @@
 <head>
 	<title>Wordsmith</title>
 	{#bundle /}
+	<script src="https://unpkg.com/htmx.org@1.9.6" integrity="sha384-FhXw7b6AlE/jyjlZH5iHa/tTe9EpJ1Y55RjcgPbjeWMskSxZt1v9qkxLJWNJaGni" crossorigin="anonymous"></script>
 </head>
 <body>
 	<h1>Wordsmith</h1>
 	<p class="hello"></p>
-	<button hx-post="/hi" hx-swap="outerHTML">
-		Click Me
-	</button>
+
+	<input type="text" id="user-input" name="user-input" placeholder="Enter text to reverse here">
+	<button hx-post="/reverse" hx-include="#user-input" hx-target="#response">Submit</button>
+	<p id="response"></p>
+
 </body>
 </html>
