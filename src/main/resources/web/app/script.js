@@ -1,4 +1,4 @@
 import $ from 'jquery';
 import 'bootstrap/dist/css/bootstrap.css';
 
-$('.hello')?.html('Hello, world!');
+$('.hello')?.html('Welcome to wordsmith, a revolutionary piece of software!');
