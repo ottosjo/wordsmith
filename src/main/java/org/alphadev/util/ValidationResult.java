@@ -1,4 +1,4 @@
-package org.alphadev;
+package org.alphadev.util;
 
 import java.util.ArrayList;
 import java.util.List;

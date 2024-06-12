@@ -1,4 +1,6 @@
-package org.alphadev;
+package org.alphadev.text.reverse;
+
+import org.alphadev.util.ValidationResult;
 
 import jakarta.enterprise.context.ApplicationScoped;
 

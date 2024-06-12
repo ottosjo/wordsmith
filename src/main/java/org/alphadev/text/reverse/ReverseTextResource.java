@@ -1,4 +1,4 @@
-package org.alphadev;
+package org.alphadev.text.reverse;
 
 import jakarta.inject.Inject;
 import jakarta.ws.rs.FormParam;

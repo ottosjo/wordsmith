@@ -1,5 +1,6 @@
 package org.alphadev;
 
+import org.alphadev.text.reverse.SingleThreadedTextReverseStrategy;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
