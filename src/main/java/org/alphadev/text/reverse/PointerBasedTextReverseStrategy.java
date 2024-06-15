@@ -35,7 +35,7 @@ public class PointerBasedTextReverseStrategy implements TextReverseStrategy {
 		var i = 0;
 		var j = 0;
 		while (i < text.length()) {
-			if (isReversible(result[j])) {
+			if (j < text.length() && isReversible(result[j])) {
 				j++;
 			} else {
 				reverseCharsBetween(result, i, j - 1);

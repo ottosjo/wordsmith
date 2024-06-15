@@ -13,6 +13,13 @@ class PointerBasedTextReverseStrategyTest {
 	}
 
 	@Test
+	void testReverseWord() {
+		var strat = new PointerBasedTextReverseStrategy();
+		var actual = strat.reverse("word");
+		Assertions.assertEquals("drow", actual);
+	}
+
+	@Test
 	void testReverseWhiteSpaces() {
 		var strat = new PointerBasedTextReverseStrategy();
 		var actual = strat.reverse("   Spaces  behålls   här. ");
