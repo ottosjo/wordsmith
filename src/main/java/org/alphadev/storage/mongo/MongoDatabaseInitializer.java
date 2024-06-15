@@ -26,6 +26,7 @@ public class MongoDatabaseInitializer {
 	public void init(MongoDatabase database) {
 		addMissingCollections(database);
 		addIndices(database);
+		log.info("Collections and indices added successfully");
 	}
 
 	private void addIndices(final MongoDatabase database) {

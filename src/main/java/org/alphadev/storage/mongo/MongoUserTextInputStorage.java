@@ -6,7 +6,9 @@ import java.util.List;
 import org.alphadev.storage.UserTextInputStorage;
 import org.alphadev.text.reverse.TextReverseItem;
 import org.bson.Document;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.eclipse.microprofile.config.ConfigProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoClient;
@@ -16,7 +18,6 @@ import com.mongodb.client.MongoDatabase;
 
 import io.quarkus.runtime.Shutdown;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
 
 /**
  * Persistence layer for user text input to/from mongo db
@@ -26,18 +27,29 @@ public class MongoUserTextInputStorage implements UserTextInputStorage {
 
 	public static final String SESSION_ID_KEY = "sessionId";
 	public static final String TEXT_KEY = "text";
+	private final Logger log = LoggerFactory.getLogger(getClass());
 
-	@ConfigProperty(name = "mongodb.connectionString")
-	String connectionString;
-
-	@Inject
-	MongoDatabaseInitializer initializer;
+	private final MongoDatabaseInitializer initializer = new MongoDatabaseInitializer();
 
 	private final MongoClient mongoClient;
 
-	private MongoUserTextInputStorage() {
-		mongoClient = MongoClients.create(connectionString);
-		initializer.init(getDb());
+	public MongoUserTextInputStorage() {
+		mongoClient = createMongoClient();
+	}
+
+	private MongoClient createMongoClient() {
+		var config = ConfigProvider.getConfig();
+		var connectionString = config.getConfigValue("mongodb.connectionstring");
+		var password = config.getConfigValue("mongo.password");
+		log.info("Connection string: {}", connectionString);
+		log.info("Mongo password length: {}", password.getValue().length());
+
+		var mongoConnection = connectionString.getValue().replace("<password>", password.getValue());
+		var client = MongoClients.create(mongoConnection);
+		log.info("Mongo client: {}", client);
+		var db = client.getDatabase(MongoConstant.DB_NAME);
+		initializer.init(db);
+		return client;
 	}
 
 	private MongoDatabase getDb() {
