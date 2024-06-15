@@ -41,8 +41,8 @@
 			margin-top: 1em;
 		}
 
-        #request-history-div {
-			margin-top: 3em;
+        .form-group {
+			margin-top: 2em;
 		}
 
 	</style>
@@ -58,16 +58,15 @@
 			<textarea id="user-input" name="user-input" placeholder="Enter text to reverse here" rows="5"
 					  cols="80"></textarea>
 		</div>
+		<button hx-post="/reverse" hx-include="#user-input" hx-target="#reversed-textbox">Submit</button>
 		<div class="form-group">
 			<label for="reversed-textbox">Reversed text</label>
 			<textarea id="reversed-textbox" name="reversed-textbox" readonly rows="5" cols="80"></textarea>
 		</div>
 	</div>
-	<button hx-post="/reverse" hx-include="#user-input" hx-target="#response">Submit</button>
-	<p id="response"></p>
 </div>
 
-<div id="request-history-div">
+<div id="request-history-div" class="form-group">
 	<label for="request-history-table">Request history</label>
 	<table id="request-history-table">
 		<tr>
