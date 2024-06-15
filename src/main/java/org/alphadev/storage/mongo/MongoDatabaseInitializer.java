@@ -1,6 +1,7 @@
 package org.alphadev.storage.mongo;
 
 import static org.alphadev.storage.mongo.MongoConstant.Collection.REVERSIBLE_TEXT_INPUT;
+import static org.alphadev.storage.mongo.MongoUserTextInputStorage.SESSION_ID_KEY;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -35,7 +36,7 @@ public class MongoDatabaseInitializer {
 	private static void createSessionIdIndex(final MongoDatabase database) {
 		var collection = database.getCollection(REVERSIBLE_TEXT_INPUT);
 
-		var index = new Document("sessionId", 1);  // 1 for ascending, -1 for descending
+		var index = new Document(SESSION_ID_KEY, 1);  // 1 for ascending, -1 for descending
 		var indexOptions = new IndexOptions().unique(false);
 		collection.createIndex(index, indexOptions);
 	}
