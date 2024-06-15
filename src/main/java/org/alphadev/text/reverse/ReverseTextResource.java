@@ -19,6 +19,7 @@ import jakarta.ws.rs.core.Response;
 public class ReverseTextResource {
 
 	@Inject
+	@TextReverseStrategyQualifier(TextReverseStrategyQualifier.Strategy.POINTER_BASED)
 	TextReverseStrategy textReverseStrategy;
 	@Inject
 	TextValidator textValidator;

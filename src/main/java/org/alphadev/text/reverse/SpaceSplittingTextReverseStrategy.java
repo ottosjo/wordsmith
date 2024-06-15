@@ -2,24 +2,41 @@ package org.alphadev.text.reverse;
 
 import java.util.Set;
 
+import org.alphadev.text.reverse.TextReverseStrategyQualifier.Strategy;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import jakarta.enterprise.context.ApplicationScoped;
 
+@TextReverseStrategyQualifier(Strategy.SPACE_SPLITTING)
 @ApplicationScoped
-public class SingleThreadedTextReverseStrategy implements TextReverseStrategy {
+public class SpaceSplittingTextReverseStrategy implements TextReverseStrategy {
 
 	private static final Set<Character> NON_REVERSED_CHARS = Set.of('.', ',');
 
+	private final Logger log = LoggerFactory.getLogger(getClass());
+
 	@Override
 	public String reverse(final String text) {
+		try {
+			return reverseText(text);
+		} catch (Exception ex) {
+			log.error("Failed to convert the following string: '{}'", text, ex);
+			return "";
+		}
+	}
 
+	private static String reverseText(final String text) {
 		var builder = new StringBuilder(text.length());
 		var words = text.split(" ");
-		for (final String word : words) {
-			var reversed = reverseChars(word);
+
+		for (int i = 0; i < words.length; i++) {
+			var reversed = reverseChars(words[i]);
 			builder.append(reversed);
-			builder.append(" ");
+			if (i != words.length - 1) {
+				builder.append(" ");
+			}
 		}
-		builder.deleteCharAt(builder.length() - 1); // ugly removal of last space added in the for-loop
 		return builder.toString();
 	}
 
@@ -31,6 +48,9 @@ public class SingleThreadedTextReverseStrategy implements TextReverseStrategy {
 	 * Uses two pointers (indices) to swap the reversible characters in a word
 	 */
 	private static char[] reverseChars(final String word) {
+		if (word.isEmpty()) {
+			return new char[0];
+		}
 		var w = word.toCharArray();
 		var i = 0;
 		var j = word.length() - 1;
