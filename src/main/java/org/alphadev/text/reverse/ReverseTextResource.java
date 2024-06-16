@@ -63,10 +63,10 @@ public class ReverseTextResource {
 		var b = new StringBuilder();
 		for (var item : items) {
 			var r = String.format("<tr><td>%s</td><td>%s</td><td>%s</td></tr>",
-					item.time(), item.text(), item.reversedText());
+					item.timestamp(), item.text(), item.reversedText());
 			// TODO - delegate the formatting to a utility class
-			// TODO - format the date/time properly...
-			// TODO - sort the items by date/time desc?
+			// TODO - format the date/timestamp properly...
+			// TODO - sort the items by date/timestamp desc?
 			b.append(r);
 		}
 		return Response.ok().entity(b.toString()).build();

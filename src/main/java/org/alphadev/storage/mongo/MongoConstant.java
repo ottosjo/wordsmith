@@ -6,6 +6,7 @@ class MongoConstant {
 	}
 
 	public static final String DB_NAME = "wordsmith";
+	public static final String SESSION_ID_KEY = "sessionId";
 
 	public static class Collection {
 		private Collection() {

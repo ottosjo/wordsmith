@@ -1,7 +1,14 @@
 package org.alphadev.text.reverse;
 
-import java.time.Instant;
+import org.bson.codecs.pojo.annotations.BsonProperty;
 
-public record TextReverseItem(String sessionId, Instant time, String text, String reversedText) {
+/**
+ * timestamp specified in epoch millis
+ */
+public record TextReverseItem(
+		@BsonProperty("sessionId") String sessionId,
+		@BsonProperty("timestamp") Long timestamp,
+		@BsonProperty("text") String text,
+		@BsonProperty("reversedText") String reversedText) {
 
 }

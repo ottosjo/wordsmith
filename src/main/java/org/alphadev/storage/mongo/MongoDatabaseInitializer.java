@@ -1,7 +1,7 @@
 package org.alphadev.storage.mongo;
 
 import static org.alphadev.storage.mongo.MongoConstant.Collection.REVERSIBLE_TEXT_INPUT;
-import static org.alphadev.storage.mongo.MongoUserTextInputStorage.SESSION_ID_KEY;
+import static org.alphadev.storage.mongo.MongoConstant.SESSION_ID_KEY;
 
 import java.util.HashSet;
 import java.util.Set;

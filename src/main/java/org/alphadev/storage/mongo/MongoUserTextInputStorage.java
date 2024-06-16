@@ -1,5 +1,7 @@
 package org.alphadev.storage.mongo;
 
+import static org.alphadev.storage.mongo.MongoConstant.SESSION_ID_KEY;
+
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -13,11 +15,9 @@ import org.eclipse.microprofile.config.ConfigProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoDatabase;
 
 import io.quarkus.runtime.Shutdown;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -27,11 +27,6 @@ import jakarta.enterprise.context.ApplicationScoped;
  */
 @ApplicationScoped
 public class MongoUserTextInputStorage implements UserTextInputStorage {
-
-	public static final String SESSION_ID_KEY = "sessionId";
-	public static final String TEXT_KEY = "text";
-	public static final String REVERSED_TEXT_KEY = "reversedText";
-	public static final String TIMESTAMP_KEY = "timestamp";
 	private final Logger log = LoggerFactory.getLogger(getClass());
 
 	private final MongoDatabaseInitializer initializer = new MongoDatabaseInitializer();
@@ -41,61 +36,51 @@ public class MongoUserTextInputStorage implements UserTextInputStorage {
 
 	public MongoUserTextInputStorage() {
 		mongoClient = createMongoClient();
-		clock = Clock.system(ZoneId.of("Europe/Stockholm")); // TODO - time zone stuff...
+		clock = Clock.system(ZoneId.of("Europe/Stockholm")); // TODO - timestamp zone stuff...
 	}
 
 	private MongoClient createMongoClient() {
+		try {
+			var mongoConnection = getMongoConnectionString();
+			var client = MongoClients.create(mongoConnection);
+			log.info("Mongo client was created successfully: {}", client);
+			var db = client.getDatabase(MongoConstant.DB_NAME);
+			initializer.init(db);
+			return client;
+		} catch (Exception ex) {
+			throw new RuntimeException("Failed to create mongo client", ex);
+		}
+	}
+
+	private String getMongoConnectionString() {
 		var config = ConfigProvider.getConfig();
 		var connectionString = config.getConfigValue("mongodb.connectionstring");
 		var password = config.getConfigValue("mongo.password");
 		log.info("Connection string: {}", connectionString);
-		log.info("Mongo password length: {}", password.getValue().length());
-
-		var mongoConnection = connectionString.getValue().replace("<password>", password.getValue());
-		var client = MongoClients.create(mongoConnection);
-		log.info("Mongo client: {}", client);
-		var db = client.getDatabase(MongoConstant.DB_NAME);
-		initializer.init(db);
-		return client;
-	}
-
-	private MongoDatabase getDb() {
-		return mongoClient.getDatabase(MongoConstant.DB_NAME);
+		return connectionString.getValue().replace("<password>", password.getValue());
 	}
 
 	@Override
 	public boolean write(final String sessionId, final String text, final String reversedText) {
-		var document = new Document(SESSION_ID_KEY, sessionId)
-				.append(TIMESTAMP_KEY, Instant.now(clock).toEpochMilli())
-				.append(TEXT_KEY, text)
-				.append(REVERSED_TEXT_KEY, reversedText);
-		var res = getCollection().insertOne(document);
+		var item = new TextReverseItem(
+				sessionId, Instant.now(clock).toEpochMilli(), text, reversedText
+		);
+		var res = getCollection().insertOne(item);
 		return res.wasAcknowledged();
 	}
 
 	@Override
 	public List<TextReverseItem> read(final String sessionId) {
 		var query = new Document(SESSION_ID_KEY, sessionId);
-		var docs = getCollection().find(query);
-		return convertToDomain(docs);
-	}
-
-	private static ArrayList<TextReverseItem> convertToDomain(final FindIterable<Document> docs) {
 		var items = new ArrayList<TextReverseItem>();
-		for (final Document doc : docs) {
-			var item = new TextReverseItem(
-					doc.getString(SESSION_ID_KEY),
-					Instant.ofEpochMilli(doc.getLong(TIMESTAMP_KEY)),
-					doc.getString(TEXT_KEY),
-					doc.getString(REVERSED_TEXT_KEY)
-			);
-			items.add(item);
-		}
+		getCollection().find(query, TextReverseItem.class).forEach(items::add);
 		return items;
 	}
 
-	private MongoCollection<Document> getCollection() {
-		return getDb().getCollection(MongoConstant.Collection.REVERSIBLE_TEXT_INPUT);
+	private MongoCollection<TextReverseItem> getCollection() {
+		return mongoClient
+				.getDatabase(MongoConstant.DB_NAME)
+				.getCollection(MongoConstant.Collection.REVERSIBLE_TEXT_INPUT, TextReverseItem.class);
 	}
 
 	@Shutdown
