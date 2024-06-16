@@ -1,5 +1,7 @@
 package org.alphadev.text.reverse;
 
-public record TextReverseItem(String sessionId, String text) {
+import java.time.Instant;
+
+public record TextReverseItem(String sessionId, Instant time, String text, String reversedText) {
 
 }

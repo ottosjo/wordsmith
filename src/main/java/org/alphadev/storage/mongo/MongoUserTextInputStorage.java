@@ -1,5 +1,8 @@
 package org.alphadev.storage.mongo;
 
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,14 +30,18 @@ public class MongoUserTextInputStorage implements UserTextInputStorage {
 
 	public static final String SESSION_ID_KEY = "sessionId";
 	public static final String TEXT_KEY = "text";
+	public static final String REVERSED_TEXT_KEY = "reversedText";
+	public static final String TIMESTAMP_KEY = "timestamp";
 	private final Logger log = LoggerFactory.getLogger(getClass());
 
 	private final MongoDatabaseInitializer initializer = new MongoDatabaseInitializer();
 
 	private final MongoClient mongoClient;
+	private final Clock clock;
 
 	public MongoUserTextInputStorage() {
 		mongoClient = createMongoClient();
+		clock = Clock.system(ZoneId.of("Europe/Stockholm")); // TODO - time zone stuff...
 	}
 
 	private MongoClient createMongoClient() {
@@ -57,9 +64,11 @@ public class MongoUserTextInputStorage implements UserTextInputStorage {
 	}
 
 	@Override
-	public boolean write(final String sessionId, final String text) {
+	public boolean write(final String sessionId, final String text, final String reversedText) {
 		var document = new Document(SESSION_ID_KEY, sessionId)
-				.append(TEXT_KEY, text);
+				.append(TIMESTAMP_KEY, Instant.now(clock).toEpochMilli())
+				.append(TEXT_KEY, text)
+				.append(REVERSED_TEXT_KEY, reversedText);
 		var res = getCollection().insertOne(document);
 		return res.wasAcknowledged();
 	}
@@ -74,7 +83,12 @@ public class MongoUserTextInputStorage implements UserTextInputStorage {
 	private static ArrayList<TextReverseItem> convertToDomain(final FindIterable<Document> docs) {
 		var items = new ArrayList<TextReverseItem>();
 		for (final Document doc : docs) {
-			var item = new TextReverseItem(doc.getString(SESSION_ID_KEY), doc.getString(TEXT_KEY));
+			var item = new TextReverseItem(
+					doc.getString(SESSION_ID_KEY),
+					Instant.ofEpochMilli(doc.getLong(TIMESTAMP_KEY)),
+					doc.getString(TEXT_KEY),
+					doc.getString(REVERSED_TEXT_KEY)
+			);
 			items.add(item);
 		}
 		return items;

@@ -21,6 +21,7 @@ import jakarta.ws.rs.core.Response;
 @Path("/reverse")
 public class ReverseTextResource {
 
+	// TODO - the resource is getting large, move stuff to a service class
 	@Inject
 	@TextReverseStrategyQualifier(TextReverseStrategyQualifier.Strategy.POINTER_BASED)
 	TextReverseStrategy textReverseStrategy;
@@ -61,21 +62,24 @@ public class ReverseTextResource {
 		log.info("Retrieved {} text items from storage", items.size());
 		var b = new StringBuilder();
 		for (var item : items) {
-			var r = String.format("<tr><td>%s</td><td>%s</td></tr>",
-					item.text(), "fake");
+			var r = String.format("<tr><td>%s</td><td>%s</td><td>%s</td></tr>",
+					item.time(), item.text(), item.reversedText());
+			// TODO - delegate the formatting to a utility class
+			// TODO - format the date/time properly...
+			// TODO - sort the items by date/time desc?
 			b.append(r);
 		}
 		return Response.ok().entity(b.toString()).build();
 	}
 
 	private Response handleTextReverseRequest(String sessionId, final String text) {
-		var reversed = textReverseStrategy.reverse(text);
+		var reversedText = textReverseStrategy.reverse(text);
 		var res = Response.ok()
-				.entity(reversed);
+				.entity(reversedText);
 		if (isNullOrEmpty(sessionId)) {
 			sessionId = handleMissingSessionId(res);
 		}
-		var success = storage.write(sessionId, text);
+		var success = storage.write(sessionId, text, reversedText);
 		if (success) {
 			log.info("Successfully persisted reversed text");
 		} else {

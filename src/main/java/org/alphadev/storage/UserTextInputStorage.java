@@ -8,5 +8,5 @@ public interface UserTextInputStorage {
 
 	List<TextReverseItem> read(String sessionId);
 
-	boolean write(String sessionId, String text);
+	boolean write(String sessionId, String text, String reversedText);
 }
