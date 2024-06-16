@@ -4,10 +4,13 @@ import static io.quarkus.runtime.util.StringUtil.isNullOrEmpty;
 
 import org.alphadev.session.SessionIdGenerator;
 import org.alphadev.storage.UserTextInputStorage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import jakarta.inject.Inject;
 import jakarta.ws.rs.CookieParam;
 import jakarta.ws.rs.FormParam;
+import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
@@ -28,9 +31,12 @@ public class ReverseTextResource {
 	@Inject
 	UserTextInputStorage storage;
 
+	private final Logger log = LoggerFactory.getLogger(getClass());
+
 	@POST
 	@Produces(MediaType.TEXT_PLAIN)
-	public Response reverse(@FormParam("user-input") String text, @CookieParam("session-id") String sessionId) {
+	public Response reverse(@FormParam("user-input") String text, @CookieParam("sessionId") String sessionId) {
+		log.info("Got request to reverse for sessionId={} and text={}", sessionId, text);
 		var validationResult = textValidator.validate(text);
 		if (validationResult.isValid()) {
 			return handleTextReverseRequest(sessionId, text);
@@ -42,6 +48,26 @@ public class ReverseTextResource {
 		}
 	}
 
+	@GET
+	@Path("/history")
+	@Produces(MediaType.TEXT_PLAIN)
+	public Response history(@CookieParam("sessionId") String sessionId) {
+		log.info("Fetching historical reverse text requests...");
+		if (isNullOrEmpty(sessionId)) {
+			log.info("Session id is null...");
+			return Response.ok().entity("").build();
+		}
+		var items = storage.read(sessionId);
+		log.info("Retrieved {} text items from storage", items.size());
+		var b = new StringBuilder();
+		for (var item : items) {
+			var r = String.format("<tr><td>%s</td><td>%s</td></tr>",
+					item.text(), "fake");
+			b.append(r);
+		}
+		return Response.ok().entity(b.toString()).build();
+	}
+
 	private Response handleTextReverseRequest(String sessionId, final String text) {
 		var reversed = textReverseStrategy.reverse(text);
 		var res = Response.ok()
@@ -50,7 +76,12 @@ public class ReverseTextResource {
 			sessionId = handleMissingSessionId(res);
 		}
 		var success = storage.write(sessionId, text);
-		// TODO - handle failure
+		if (success) {
+			log.info("Successfully persisted reversed text");
+		} else {
+			log.warn("Failed to persist reversed text");
+			// TODO - display error message to user?
+		}
 		return res.build();
 	}
 
@@ -65,7 +96,7 @@ public class ReverseTextResource {
 	private static NewCookie createCookie(final String sessionId) {
 		return new NewCookie.Builder("sessionId")
 				.value(sessionId)
-				.secure(true)
+				//.secure(true)
 				.maxAge(-1)
 				.build();
 	}

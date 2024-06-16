@@ -25,25 +25,25 @@
             box-sizing: border-box;
         }
 
-		label {
-			font-size: large;
-			font-weight: bold;
-		}
+        label {
+            font-size: large;
+            font-weight: bold;
+        }
 
         #reversed-textbox {
             background-color: #f2f2f2;
         }
 
-		#request-history-table {
-			width: 100%;
+        #request-history-table {
+            width: 100%;
             border-collapse: collapse;
             background-color: #f2f2f2;
-			margin-top: 1em;
-		}
+            margin-top: 1em;
+        }
 
         .form-group {
-			margin-top: 2em;
-		}
+            margin-top: 2em;
+        }
 
 	</style>
 </head>
@@ -69,13 +69,14 @@
 <div id="request-history-div" class="form-group">
 	<label for="request-history-table">Request history</label>
 	<table id="request-history-table">
+		<thead>
 		<tr>
 			<th>Text</th>
 			<th>Reversed</th>
 		</tr>
-		<tr hx-get="/history" hx-target="#request-history-table">
-			<td>Loading...</td>
-			<td>Loading...</td>
+		</thead>
+		<tbody hx-get="/reverse/history" hx-trigger="load">
+		</tbody>
 	</table>
 </div>
 </body>
