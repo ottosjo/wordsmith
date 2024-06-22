@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wordsmith-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: wordsmith-jvm
+  template:
+    metadata:
+      labels:
+        app: wordsmith-jvm
+    spec:
+      containers:
+        - name: wordsmith
+          image: gcr.io/wordsmith-1234/wordsmith-jvm:latest
+          ports:
+            - containerPort: 8080
