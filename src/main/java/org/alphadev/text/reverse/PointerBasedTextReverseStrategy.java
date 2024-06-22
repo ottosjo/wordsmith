@@ -16,7 +16,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 @ApplicationScoped
 public class PointerBasedTextReverseStrategy implements TextReverseStrategy {
 
-	private static final Set<Character> SPLIT_CHARS = Set.of('.', ',', ' ', '\t', '\n', '\r');
+	private static final Set<Character> SPLIT_CHARS = Set.of('.', ',', '?', '!', ' ', '\t', '\n', '\r');
 
 	private final Logger log = LoggerFactory.getLogger(getClass());
 
