@@ -14,7 +14,7 @@
 # docker run -i --rm -p 8080:8080 quarkus/wordsmith
 #
 ###
-FROM registry.access.redhat.com/ubi8/ubi-minimal:8.9
+FROM --platform=linux/amd64 registry.access.redhat.com/ubi8/ubi-minimal:8.9
 WORKDIR /work/
 RUN chown 1001 /work \
     && chmod "g+rwX" /work \
