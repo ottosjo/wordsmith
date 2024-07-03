@@ -1,5 +1,6 @@
 package org.alphadev.storage.mongo;
 
+import static com.google.common.base.Strings.isNullOrEmpty;
 import static org.alphadev.storage.mongo.MongoConstant.SESSION_ID_KEY;
 
 import java.time.Clock;
@@ -58,7 +59,11 @@ public class MongoUserTextInputStorage implements UserTextInputStorage {
 	}
 
 	private String getMongoConnectionString() {
-		return config.getSecret(CONNECTION_STRING_KEY);
+		var connectionString = config.getSecret(CONNECTION_STRING_KEY);
+		if (isNullOrEmpty(connectionString)) {
+			throw new IllegalStateException("Mongo connection string is required: " + CONNECTION_STRING_KEY);
+		}
+		return connectionString;
 	}
 
 	private MongoCollection<TextReverseItem> getCollection() {

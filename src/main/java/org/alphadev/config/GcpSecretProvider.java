@@ -27,7 +27,7 @@ public class GcpSecretProvider implements SecretProvider {
 			var response = client.accessSecretVersion(secretVersionName);
 			return response.getPayload().getData().toStringUtf8();
 		} catch (Exception e) {
-			log.error("Failed to fetch secret={}", key);
+			log.error("Failed to fetch secret '{}'", key, e);
 		}
 		return null;
 	}
