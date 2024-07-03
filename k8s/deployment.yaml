@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: wordsmith-deployment
+  namespace: wordsmith
 spec:
   replicas: 1
   selector:
@@ -12,6 +13,7 @@ spec:
       labels:
         app: wordsmith-jvm
     spec:
+      serviceAccountName: wordsmith-sa
       containers:
         - name: wordsmith
           image: gcr.io/wordsmith-1234/wordsmith-jvm:latest
