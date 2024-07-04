@@ -6,7 +6,7 @@ If you want to learn more about Quarkus, please visit its website: https://quark
 
 ## Setup with Quarkus and HTMX
 - https://docs.quarkiverse.io/quarkus-web-bundler/dev/
-- 
+- https://htmx.org/docs/
 
 ## Running the application in dev mode
 
@@ -51,10 +51,67 @@ You can then execute your native executable with: `./target/wordsmith-1.0.0-SNAP
 
 If you want to learn more about building native executables, please consult https://quarkus.io/guides/maven-tooling.
 
-## Provided Code
+## Host the application on GKE (macOS)
 
-### REST
+### Prerequisites
 
-Easily start your REST Web Services
+- Google Cloud SDK
+- Docker
 
-[Related guide section...](https://quarkus.io/guides/getting-started-reactive#reactive-jax-rs-resources)
+### Steps
+
+authenticate to GCP
+
+    gcloud components update
+    gcloud auth login
+    gcloud auth configure-docker gcr.io
+
+create a new google could project
+
+    gcloud projects create wordsmith-1234
+    gcloud config set project wordsmith-1234
+
+set required secrets in google cloud
+
+    gcloud services enable secretmanager.googleapis.com
+    printf "secret-mongo-password" | gcloud secrets create mongoConnectionString --data-file=-
+
+add secret access to the service account
+
+    gcloud projects add-iam-policy-binding wordsmith-1234 \
+    --role="roles/secretmanager.secretAccessor" \
+    --member=serviceAccount:<my-service-account-email>
+
+package the application
+
+    ./mvnw package
+
+build the docker image
+    
+    docker build -f src/main/docker/Dockerfile.jvm -t gcr.io/wordsmith-1234/wordsmith-jvm:v1 .
+
+enable the container registry
+
+    gcloud services enable containerregistry.googleapis.com
+
+login to the docker registry
+
+    docker login -u oauth2accesstoken -p "$(gcloud auth print-access-token)" https://gcr.io
+
+push the image
+
+    docker push gcr.io/wordsmith-1234/wordsmith-jvm:v1
+    docker tag gcr.io/wordsmith-1234/wordsmith-jvm:v1 gcr.io/wordsmith-1234/wordsmith-jvm:latest
+    docker push gcr.io/wordsmith-1234/wordsmith-jvm:latest
+
+enable cloud run api
+
+    gcloud services enable run.googleapis.com
+
+deploy the app using cloud run
+
+    gcloud run deploy wordsmith \
+    --image gcr.io/wordsmith-1234/wordsmith-jvm:latest \
+    --platform managed \
+    --region europe-west1 \
+    --allow-unauthenticated
