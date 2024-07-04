@@ -21,7 +21,7 @@ import jakarta.ws.rs.core.Response;
 @Path("/reverse")
 public class ReverseTextResource {
 
-	// TODO - the resource is getting large, move stuff to a service class
+	// TODO - the resource is getting large with too many dependencies, move stuff to a service class
 	@Inject
 	@TextReverseStrategyQualifier(TextReverseStrategyQualifier.Strategy.POINTER_BASED)
 	TextReverseStrategy textReverseStrategy;
