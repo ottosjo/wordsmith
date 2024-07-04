@@ -1,5 +1,9 @@
 package org.alphadev.text.reverse;
 
+import static java.util.Objects.isNull;
+
+import java.util.function.Supplier;
+
 import org.alphadev.util.ValidationResult;
 
 import jakarta.enterprise.context.ApplicationScoped;
@@ -11,15 +15,25 @@ public class TextValidator {
 
 	public ValidationResult validate(String text) {
 		return join(
-				validateContent(text),
-				validateTextLength(text)
+				() -> validateTextNotNull(text),
+				() -> validateTextContent(text),
+				() -> validateTextLength(text)
 		);
 	}
 
 	/**
 	 * The text is required to contain at least one letter or digit.
 	 */
-	private static ValidationResult validateContent(final String text) {
+	private static ValidationResult validateTextNotNull(final String text) {
+		return isNull(text)
+				? ValidationResult.invalid("The text is empty (null), please provide a text.", true)
+				: ValidationResult.valid();
+	}
+
+	/**
+	 * The text is required to contain at least one letter or digit.
+	 */
+	private static ValidationResult validateTextContent(final String text) {
 		for (final char c : text.toCharArray()) {
 			if (Character.isLetterOrDigit(c)) {
 				return ValidationResult.valid();
@@ -42,13 +56,16 @@ public class TextValidator {
 
 	/**
 	 * Combines multiple validation results into one final result.
-	 * The provided results are not altered.
 	 */
-	private ValidationResult join(ValidationResult... results) {
-		var r = ValidationResult.valid();
+	private ValidationResult join(Supplier<ValidationResult>... results) {
+		var joinedResult = ValidationResult.valid();
 		for (var result : results) {
-			r.join(result);
+			var r = result.get();
+			joinedResult.join(r);
+			if (r.isFinal()) {
+				break;
+			}
 		}
-		return r;
+		return joinedResult;
 	}
 }

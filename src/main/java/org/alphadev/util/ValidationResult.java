@@ -2,10 +2,15 @@ package org.alphadev.util;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class ValidationResult {
 
 	private boolean isValid = true;
+	/**
+	 * Additional validation rules will not be processed if isFinal is true
+	 */
+	private boolean isFinal = false;
 	private final List<String> messages = new ArrayList<>();
 
 	private ValidationResult() {
@@ -16,17 +21,18 @@ public class ValidationResult {
 	}
 
 	public static ValidationResult invalid(String message) {
+		return invalid(message, false);
+	}
+
+	public static ValidationResult invalid(String message, boolean isFinal) {
 		var v = new ValidationResult();
-		v.setInvalid();
+		v.isFinal = isFinal;
+		v.isValid = false;
 		v.addMessage(message);
 		return v;
 	}
 
-	public void setInvalid() {
-		isValid = false;
-	}
-
-	public void addMessage(final String message) {
+	private void addMessage(final String message) {
 		messages.add(message);
 	}
 
@@ -39,7 +45,20 @@ public class ValidationResult {
 		return isValid;
 	}
 
+	public boolean isFinal() {
+		return isFinal;
+	}
+
 	public List<String> getMessages() {
 		return messages;
+	}
+
+	@Override
+	public String toString() {
+		return "ValidationResult{" +
+				"isValid=" + isValid +
+				", isFinal=" + isFinal +
+				", messages=" + Set.copyOf(messages) +
+				'}';
 	}
 }
